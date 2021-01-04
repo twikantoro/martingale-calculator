@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Martingale Calculator</title>
+  <script src="./jquery-3.5.1.min.js"></script>
+  <script src="./js.cookie.min.js"></script>
+  <style>
+    table,
+    th,
+    td {
+      border: 1px solid black;
+      border-collapse: collapse;
+      text-align: center;
+    }
+
+    .parameters td,
+    .parameters th,
+    .parameters table {
+      border: 0px;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Martingale Calculator</h1>
+  <div class="parameters">
+    <table>
+      <tr>
+        <td><label>Yield</label></td>
+        <td><input type="number" id="yield" min="1" max="100" value=70 /> %</td>
+      </tr>
+      <tr>
+        <td><label>Starting bet</label></td>
+        <td><input type="number" id="bet" min="1" value=1 /> $</td>
+      </tr>
+      <tr>
+        <td><label>Rows to display</label></td>
+        <td><input type="number" id="rows" min="1" step="1" value=10 /> </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input value="Calculate" type="button" onclick="calculate()"></td>
+      </tr>
+      <tr>
+        <td>View</td>
+        <td>
+          <input type="checkbox" id="checkbet" checked onchange="togglebet()"/>Bet
+          <input type="checkbox" id="checkaccumulated" checked onchange="toggleaccumulated()"/>Accumulated Bet
+          <input type="checkbox" id="checksession" onchange="togglesession()"/>Session Profit
+          <input type="checkbox" id="checkclean" checked onchange="toggleclean()"/>Clean Profit
+        </td>
+        
+      </tr>
+    </table>
+  </div>
+
+  <br />
+
+  <table id="sheet">
+    <tr>
+      <th class='sequencec'>#</th>
+      <th class='betc' style="width:100px; font-weight:bold">Bet</th>
+      <th class='accumulatedc'>Accumulated Bet</th>
+      <th class='sessionc'>Session Profit</th>
+      <th class='cleanc'>Clean profit</th>
+    </tr>
+  </table>
+
+  <script>
+    $(document).ready(() => {
+      calculate()
+      togglesession()
+    })
+    function togglebet(){
+      $('.betc').toggle()
+    }
+    function toggleaccumulated(){
+      $('.accumulatedc').toggle()
+    }
+    function togglesession(){
+      $('.sessionc').toggle()
+    }
+    function toggleclean(){
+      $('.cleanc').toggle()
+    }
+    $(document).keypress((e)=>{
+      if(e.which==13){
+        calculate()
+      }
+    })
+    function calculate() {
+        //initiate data
+        var yield = $('#yield').val()
+        var bet = $('#bet').val()
+        var data = [
+          [1, bet, bet, yield * bet / 100, yield * bet / 100],
+        ]
+        //Calculate
+        for (let i = 2; i <= $('#rows').val(); i++) {
+          var accumulated = 0
+          data.forEach((row) => {
+            accumulated += parseInt(row[1])
+          })
+          //looping to find profitable bet
+          var newbet = 1 + accumulated
+          while (accumulated + bet * yield / 100 > newbet * yield / 100) {
+            newbet += 1
+          }
+          console.log(newbet)
+          var newrow = [i, newbet, newbet + accumulated, newbet * yield / 100, (newbet * yield / 100 - accumulated).toFixed(1)]
+          data.push(newrow)
+        }
+        //Display to table
+        $('.removable').remove();
+        data.forEach((row, index) => {
+          var rowhtml = "<tr class='removable'>"
+          // row.forEach((col, index) => {
+          //   rowhtml += "<td>" + col + "</td>"
+          // })
+          rowhtml += "<td class='sequencec'>"+row[0]+"</td>"
+          rowhtml += "<td class='betc'>"+row[1]+"</td>"
+          rowhtml += "<td class='accumulatedc'>"+row[2]+"</td>"
+          rowhtml += "<td class='sessionc'>"+row[3]+"</td>"
+          rowhtml += "<td class='cleanc'>"+row[4]+"</td>"
+          rowhtml += "</tr>"
+          $('#sheet').append(rowhtml)
+        })
+        //debug
+        console.log("skrip jalan")
+      }
+  </script>
+
+</body>
+
+</html>
